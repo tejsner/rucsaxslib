@@ -1,11 +1,8 @@
 '''
-This module contains functionality related to image operations, primarily:
+This module contains functionality related to image operations.
 
-- Getting the real-space locations of individual pixels
-- Getting scattering angles, azimithal angles and scattering vectors of
-  individual pixels
-
-Implementation is done using the geometry outlined in [BOESECKE2007]_.
+Implementation is done using the geometry outlined in
+https://doi.org/10.1107/S0021889807001100
 '''
 import numpy as np
 import fabio
