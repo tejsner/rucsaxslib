@@ -48,6 +48,16 @@ KEYWORDS = {'Dim_1': (int, None, 'geometry'),
             'ExposureTime': (float, None, 'intensity'),
             'DarkConstant': (float, 0.0, 'intensity')}
 
+# axis labels for plotting
+AX_LABELS = {'normal': {'x': 'distance [mm]',
+                        'y': 'distance [mm]'},
+             'wavevector': {'x': r'$q_x \; [Å^{-1}]$',
+                            'y': r'$q_z \; [Å^{-1}]$'},
+             'gisaxs': {'x': r'sgn$(q_x) \times q_{xy} \; [Å^{-1}]$',
+                        'y': r'$q_z \; [Å^{-1}]$'},
+             'polar': {'x': r'2$\theta$ [degrees]',
+                       'y': r'$\phi$ [degrees]'}}
+
 
 def from_file(filename, engine='fabio', header_rename={}):
     if engine == 'fabio':
@@ -130,9 +140,22 @@ class ImgData:
                 xx = -xx
             return yy, xx
 
-    def plot(self, ax=None, coords='normal', **kwargs):
+    def plot(self, ax=None, coords='normal', rebin=None, **kwargs):
         xx, zz = self.get_coordinates(coords)
         xx, zz = self.orient_coordinates(xx, zz, orientation=1)
+
+        # polar coordinates in degrees for plotting
+        if coords == 'polar':
+            xx[xx < 0] += 2*np.pi
+            zz[zz < 0] += 2*np.pi
+            xx, zz = xx*180/np.pi, zz*180/np.pi
+
+        if rebin:
+            # be aware that the rebinned coordinates are edge coordinates, so
+            # they should only be used for plotting.
+            xx, zz, data = self.__rebin2d(xx, zz, self.data, rebin)
+        else:
+            data = self.data
 
         default_kwargs = {'norm': matplotlib.colors.LogNorm()}
         if kwargs:
@@ -143,16 +166,72 @@ class ImgData:
         if ax is None:
             ax = plt.gca()
 
-        ax.pcolormesh(xx, zz, self.data, **kwargs)
+        ax.pcolormesh(xx, zz, data, **kwargs)
+
+        if coords in AX_LABELS:
+            ax.set(xlabel=AX_LABELS[coords]['x'],
+                   ylabel=AX_LABELS[coords]['y'])
+
+    def __rebin2d(self, xx, yy, data, bins):
+        img_rb, xx_rb, yy_rb = np.histogram2d(x=xx.flatten(),
+                                              y=yy.flatten(),
+                                              weights=data.flatten(),
+                                              bins=bins)
+        return xx_rb, yy_rb, img_rb.T
 
     def __get_polar_coords(self):
-        pass
+        lab_xx, lab_zz = self.get_coordinates('normal')
+        lab_yy = self.header['SampleDistance']
+        r = np.sqrt(lab_xx**2 + lab_yy**2 + lab_zz**2)
+        tth = np.arccos(lab_yy/r)
+        phi = np.arctan2(lab_zz, lab_xx)
+        phi[phi < 0] += 2*np.pi
+        return tth, phi
 
-    def __get_wavevector_coords(self):
-        pass
+    def __get_wavevector_coords(self, components=('qx', 'qz')):
+        if isinstance(components, str):
+            components = (components)
+
+        tth, phi = self.get_coordinates('polar')
+
+        unit = 1e-10  # angstrom
+        theta = tth/2
+        sin_theta = np.sin(theta)
+        q = 4*np.pi/self.header['WaveLength']*sin_theta*unit
+
+        # if we just need the magnitude, return immidiately
+        if len(components) == 1 and components[0] == 'q':
+            return q
+
+        # otherwise, compute q-components
+        cos_theta = np.cos(theta)
+        qx = q*cos_theta*np.cos(phi)
+        qy = q*sin_theta
+        qz = q*cos_theta*np.sin(phi)
+
+        component_dict = {'qx': qx, 'qy': qy, 'qz': qz, 'q': q}
+
+        if len(components) == 1:
+            return component_dict[components[0]]
+        else:
+            result = []
+            for component in components:
+                result.append(component_dict[component])
+            return tuple(result)
 
     def __get_gisaxs_coords(self):
-        pass
+        qx, qy, qz = self.__get_wavevector_coords(('qx', 'qy', 'qz'))
+
+        alpha_i = self.header['IncidentAngle'] * np.pi / 180
+
+        sin_alpha_i = np.sin(alpha_i)
+        cos_alpha_i = np.cos(alpha_i)
+        # a rotation of the sample stage by alpha_i corresponds to a rotation
+        # of (qy, qz) coordinates around qz by alpha_i
+        qy_r = qy * cos_alpha_i - qz * sin_alpha_i
+        qz_r = qy * sin_alpha_i + qz * cos_alpha_i
+        signed_qxy = np.sqrt(qx**2 + qy_r**2)*np.sign(qx)
+        return signed_qxy, qz_r
 
     def __process_header(self, header):
         if not isinstance(header, dict):
