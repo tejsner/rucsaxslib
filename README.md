@@ -2,7 +2,7 @@
 
 ## Installation
 
-Currently resides at <https://test.pypi.org/project/rucsaxslib/0.0.1/>.
+Currently resides at <https://test.pypi.org/project/rucsaxslib/>.
 
 ```
 pip install numpy matplotlib fabio
