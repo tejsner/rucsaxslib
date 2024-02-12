@@ -144,7 +144,7 @@ class ImgData:
         xx, zz = self.get_coordinates(coords)
         xx, zz = self.orient_coordinates(xx, zz, orientation=1)
 
-        # polar coordinates in degrees for plotting
+        # polar coordinates in degrees (between 0 and 360) for plotting
         if coords == 'polar':
             xx[xx < 0] += 2*np.pi
             zz[zz < 0] += 2*np.pi
