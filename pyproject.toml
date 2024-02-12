@@ -5,6 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "rucsaxslib"
 version = "0.0.1"
+dependencies = [
+  "numpy",
+  "matplotlib",
+  "fabio",
+]
 authors = [
   { name="Tim Tejsner", email="ttejsner@gmail.com" },
 ]
@@ -12,9 +17,9 @@ description = "Library for interacting with x-ray scattering data"
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
 ]
 
 [project.urls]
