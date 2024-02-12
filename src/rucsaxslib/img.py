@@ -59,7 +59,7 @@ AX_LABELS = {'normal': {'x': 'distance [mm]',
                        'y': r'$\phi$ [degrees]'}}
 
 
-def from_file(filename, engine='fabio', header_rename={}):
+def from_file(filename, engine='fabio', header_rename={}, **kwargs):
     if engine == 'fabio':
         faimg = fabio.open(filename)
 
@@ -67,7 +67,7 @@ def from_file(filename, engine='fabio', header_rename={}):
             if key in faimg.header:
                 faimg.header[header_rename[key]] = faimg.header[key]
 
-        return ImgData(faimg.data, faimg.header)
+        return ImgData(faimg.data, faimg.header, **kwargs)
     else:
         raise NotImplementedError(f'Engine {engine} not implemented')
 
@@ -77,20 +77,37 @@ def from_rucsaxs(filename):
                       'Date': 'Time',
                       'BackgroundCorrectionConstant': 'DarkConstant',
                       'om': 'IncidentAngle'}
-    img = from_file(filename, engine='fabio', header_rename=rucsaxs_rename)
-    img.raw += img.header['DarkConstant']
+    img = from_file(filename, engine='fabio', header_rename=rucsaxs_rename,
+                    dark_subtracted=True, mask_le_dummy=True)
     img.header['RasterOrientation'] = 3
     return img
 
 
 class ImgData:
-    def __init__(self, data, header, check_header=True):
-        self.raw = np.array(data)
-        self.data = self.raw.copy()
+    def __init__(self, data, header, check_header=True, dark_subtracted=True,
+                 mask_le_dummy=True):
+        # process header
         if check_header:
             self.__process_header(header)
         else:
             self.header = header
+
+        # mask pixels
+        if mask_le_dummy:
+            dummy_max = self.header['Dummy'] + self.header['DDummy']
+            data[data <= dummy_max] = np.nan
+        else:
+            dummy_min = self.header['Dummy'] - self.header['DDummy']
+            dummy_max = self.header['Dummy'] + self.header['DDummy']
+            data[(data <= dummy_max) & (data >= dummy_min)] = np.nan
+
+        # assign data and standard error
+        if dark_subtracted:
+            self.data = np.array(data)
+            self.error = np.sqrt(data + self.header['DarkConstant'])
+        else:
+            self.data = np.array(data) - self.header['DarkConstant']
+            self.error = np.sqrt(data)
 
     def get_coordinates(self, reference_system="normal", **kwargs):
         n1, n2 = self.header["Dim_1"], self.header["Dim_2"]
