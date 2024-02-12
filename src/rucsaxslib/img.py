@@ -92,7 +92,7 @@ class ImgData:
         else:
             self.header = header
 
-    def get_coordinates(self, reference_system="normal"):
+    def get_coordinates(self, reference_system="normal", **kwargs):
         n1, n2 = self.header["Dim_1"], self.header["Dim_2"]
         o1, o2 = self.header["Offset_1"], self.header["Offset_2"]
         b1, b2 = self.header["BSize_1"], self.header["BSize_2"]
@@ -117,7 +117,7 @@ class ImgData:
         elif reference_system == "polar":
             return self.__get_polar_coords()
         elif reference_system == "wavevector":
-            return self.__get_wavevector_coords()
+            return self.__get_wavevector_coords(**kwargs)
         elif reference_system == "gisaxs":
             return self.__get_gisaxs_coords()
 
