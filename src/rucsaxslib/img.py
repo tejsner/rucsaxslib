@@ -9,6 +9,7 @@ import fabio
 import matplotlib
 import matplotlib.pyplot as plt
 
+# Raster orientation conversion matrices
 RASTER_MAT = {1: np.matrix(((1, 0), (0, 1))),
               2: np.matrix(((-1, 0), (0, 1))),
               3: np.matrix(((1, 0), (0, -1))),
@@ -18,6 +19,8 @@ RASTER_MAT = {1: np.matrix(((1, 0), (0, 1))),
               7: np.matrix(((0, -1), (1, 0))),
               8: np.matrix(((0, -1), (-1, 0)))}
 
+# key: keyword, val: (type, default value, category). for geometry keywords, a
+# default value of None indicates that the keyword is required
 KEYWORDS = {'Dim_1': (int, None, 'geometry'),
             'Dim_2': (int, None, 'geometry'),
             'RasterOrientation': (int, 3, 'geometry'),
