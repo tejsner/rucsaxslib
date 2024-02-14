@@ -61,27 +61,39 @@ AX_LABELS = {'normal': {'x': 'distance [mm]',
                        'y': r'$\phi$ [degrees]'}}
 
 
-def from_file(filename, engine='fabio', header_rename={}, **kwargs):
+def from_file(filename, engine='fabio', header_rename={},
+              header_extra={}, **kwargs):
     if engine == 'fabio':
         faimg = fabio.open(filename)
 
         for key in header_rename:
-            if key in faimg.header:
-                faimg.header[header_rename[key]] = faimg.header[key]
+            faimg.header[header_rename[key]] = faimg.header[key]
+
+        for key in header_extra:
+            faimg.header[key] = header_extra[key]
 
         return ImgData(faimg.data, faimg.header, **kwargs)
     else:
         raise NotImplementedError(f'Engine {engine} not implemented')
 
 
-def from_rucsaxs(filename):
+def from_rucsaxs(filename, **kwargs):
     rucsaxs_rename = {'Comment': 'Title',
                       'Date': 'Time',
                       'BackgroundCorrectionConstant': 'DarkConstant',
                       'om': 'IncidentAngle'}
-    img = from_file(filename, engine='fabio', header_rename=rucsaxs_rename,
-                    dark_subtracted=True, mask_le_dummy=True)
-    img.header['RasterOrientation'] = 3
+
+    rucsaxs_extra = {'RasterOrientation': 3,
+                     'SourcePolarization': 0}
+
+    default_kwargs = {'engine': 'fabio',
+                      'header_rename': rucsaxs_rename,
+                      'header_extra': rucsaxs_extra,
+                      'dark_subtracted': True,
+                      'mask_le_dummy': True}
+
+    kwargs = {**default_kwargs, **kwargs}
+    img = from_file(filename, **kwargs)
     return img
 
 
