@@ -8,6 +8,7 @@ import numpy as np
 import fabio
 import matplotlib
 import matplotlib.pyplot as plt
+import math
 
 # Raster orientation conversion matrices
 RASTER_MAT = {1: np.matrix(((1, 0), (0, 1))),
@@ -99,7 +100,7 @@ def from_rucsaxs(filename, **kwargs):
 
 class ImgData:
     def __init__(self, data, header, check_header=True, dark_subtracted=True,
-                 mask_le_dummy=True):
+                 mask_le_dummy=True, apply_corrs=False):
         # process header
         if check_header:
             self.__process_header(header)
@@ -122,6 +123,15 @@ class ImgData:
         else:
             self.data = np.array(data) - self.header['DarkConstant']
             self.error = np.sqrt(data)
+
+        # apply corrections?
+        if apply_corrs and isinstance(apply_corrs, bool):
+            Lp = self.__get_Lp()
+            self.apply_corrections(Lp=Lp)
+        elif apply_corrs and isinstance(apply_corrs, list):
+            if 'PO' in apply_corrs and 'SP' in apply_corrs:
+                Lp = self.__get_Lp()
+            self.apply_corrections(corrs=apply_corrs, Lp=Lp)
 
     def get_coordinates(self, reference_system="normal", orientation=1,
                         wavevector_components=None):
@@ -207,6 +217,96 @@ class ImgData:
         if coords in AX_LABELS:
             ax.set(xlabel=AX_LABELS[coords]['x'],
                    ylabel=AX_LABELS[coords]['y'])
+
+    def apply_corrections(self, corrs='all', **kwargs):
+        corr_function = {'TI': self.__corr_fact_TI,
+                         'FL_TR': self.__corr_fact_FL_TR,
+                         'SP': self.__corr_fact_SP,
+                         'avg_SP': self.__corr_fact_avg_SP,
+                         'PO': self.__corr_fact_PO}
+
+        if corrs == 'all':
+            corrs = corr_function.keys()
+
+        for corr in corrs:
+            if corr not in corr_function:
+                raise ValueError(f'Correction {corr} not recognized')
+
+            data_fact, error_fact = corr_function[corr](**kwargs)
+            self.data *= data_fact
+            self.error *= error_fact
+
+    def __corr_fact_TI(self, **kwargs):
+        if 'ExposureTime' in kwargs:
+            fact = 1/kwargs['ExposureTime']
+        else:
+            fact = 1/self.header['ExposureTime']
+
+        return fact, fact
+
+    def __corr_fact_FL_TR(self, **kwargs):
+        key = 'TransmittedFlux'
+        if key in kwargs:
+            fact = 1/kwargs[key]
+        else:
+            fact = 1/self.header['TransmittedFlux']
+
+        return fact, fact
+
+    def __corr_fact_SP(self, **kwargs):
+        L0 = self.header['SampleDistance']
+        if 'Lp' in kwargs:
+            Lp = kwargs['Lp']
+        else:
+            Lp = self.__get_Lp()
+        fact = (Lp/L0)**3
+        return fact, fact
+
+    def __corr_fact_avg_SP(self, **kwargs):
+        L0 = self.header['SampleDistance']
+        px = self.header['PSize_1']
+        py = self.header['PSize_2']
+        fact = L0**2 / px / py
+        return fact, fact
+
+    def __corr_fact_PO(self, **kwargs):
+        L0 = self.header['SampleDistance']
+        # convert polarization to fraction of horizontally polarized
+        # light (rather than the PyFAI convention used in the header
+        # ranging from -1 to +1).
+        key = 'SourcePolarization'
+        if key in kwargs:
+            pol = (kwargs[key] + 1)/2
+        else:
+            pol = (self.header[key] + 1)/2
+
+        if math.isclose(pol, 0.5):
+            # calculation is faster for unpolarized light and we can
+            # re-use the Lp calculation for the solid angle correction
+            if 'Lp' in kwargs:
+                Lp = kwargs['Lp']
+            else:
+                Lp = self.__get_Lp()
+
+            fact = 0.5*(1 + (L0/Lp)**2)
+        else:
+            tth, phi = self.get_coordinates(reference_system='polar')
+            sin_tth = np.sin(tth)
+            # pol and (1-pol) factors are switched here compared to
+            # most litterature. This is because we use the convention
+            # that an azimuthal angle of 0 is horizontal on the
+            # detector.
+            fact = ((1-pol)*(1-(np.sin(phi)*sin_tth)**2) +
+                    pol*(1-(np.cos(phi)*sin_tth)**2))
+
+        # we compensate for the reduction in intensity due to
+        # polarization, so divide by the computed factor
+        return 1/fact, 1/fact
+
+    def __get_Lp(self):
+        xx, zz = self.get_coordinates(reference_system='normal')
+        yy = self.header['SampleDistance']
+        return np.sqrt(xx**2 + yy**2 + zz**2)
 
     def __rebin2d(self, xx, yy, data, bins):
         img_rb, xx_rb, yy_rb = np.histogram2d(x=xx.flatten(),
