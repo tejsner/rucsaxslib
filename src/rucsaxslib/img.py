@@ -323,7 +323,7 @@ class ImgData:
         phi = np.arctan2(lab_zz, lab_xx)
 
         # We use the convention that an azimuthal angle of zero should
-        # be horizontal on the detector. For assymmetric raster
+        # be horizontal on the detector. For asymmetric raster
         # orientations, we thus need to add 90 degrees to phi as the
         # horizontal and vertical axes are flipped.
         if self.header['RasterOrientation'] > 4:
