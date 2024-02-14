@@ -221,7 +221,17 @@ class ImgData:
         r = np.sqrt(lab_xx**2 + lab_yy**2 + lab_zz**2)
         tth = np.arccos(lab_yy/r)
         phi = np.arctan2(lab_zz, lab_xx)
+
+        # We use the convention that an azimuthal angle of zero should
+        # be horizontal on the detector. For assymmetric raster
+        # orientations, we thus need to add 90 degrees to phi as the
+        # horizontal and vertical axes are flipped.
+        if self.header['RasterOrientation'] > 4:
+            phi += np.pi/2
+
+        # reset phi to be between 0 and 2*pi.
         phi[phi < 0] += 2*np.pi
+
         return tth, phi
 
     def __get_wavevector_coords(self, components=None):
