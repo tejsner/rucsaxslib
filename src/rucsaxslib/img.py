@@ -123,7 +123,8 @@ class ImgData:
             self.data = np.array(data) - self.header['DarkConstant']
             self.error = np.sqrt(data)
 
-    def get_coordinates(self, reference_system="normal", **kwargs):
+    def get_coordinates(self, reference_system="normal", orientation=1,
+                        wavevector_components=None):
         n1, n2 = self.header["Dim_1"], self.header["Dim_2"]
         o1, o2 = self.header["Offset_1"], self.header["Offset_2"]
         b1, b2 = self.header["BSize_1"], self.header["BSize_2"]
@@ -148,9 +149,13 @@ class ImgData:
         elif reference_system == "polar":
             return self.__get_polar_coords()
         elif reference_system == "wavevector":
-            return self.__get_wavevector_coords(**kwargs)
+            return self.__get_wavevector_coords(wavevector_components)
         elif reference_system == "gisaxs":
             return self.__get_gisaxs_coords()
+
+    def get_q(self):
+        return self.get_coordinates(reference_system="wavevector",
+                                    wavevector_components='q')
 
     def orient_coordinates(self, xx, yy, orientation=1):
         orientation_from = self.header['RasterOrientation']
@@ -219,7 +224,10 @@ class ImgData:
         phi[phi < 0] += 2*np.pi
         return tth, phi
 
-    def __get_wavevector_coords(self, components=('qx', 'qz')):
+    def __get_wavevector_coords(self, components=None):
+        if components is None:
+            components = ('qx', 'qz')
+
         if isinstance(components, str):
             components = (components)
 
