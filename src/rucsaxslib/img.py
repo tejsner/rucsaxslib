@@ -115,7 +115,7 @@ class ImgData:
             dummy_max = self.header['Dummy'] + self.header['DDummy']
             data[(data <= dummy_max) & (data >= dummy_min)] = np.nan
 
-        # assign data and standard error
+        # assign data and standard error (Poisson statistics)
         if dark_subtracted:
             self.data = np.array(data)
             self.error = np.sqrt(data + self.header['DarkConstant'])
@@ -254,11 +254,11 @@ class ImgData:
         qx, qy, qz = self.__get_wavevector_coords(('qx', 'qy', 'qz'))
 
         alpha_i = self.header['IncidentAngle'] * np.pi / 180
-
         sin_alpha_i = np.sin(alpha_i)
         cos_alpha_i = np.cos(alpha_i)
+
         # a rotation of the sample stage by alpha_i corresponds to a rotation
-        # of (qy, qz) coordinates around qz by alpha_i
+        # of (qy, qz) coordinates around qx by alpha_i
         qy_r = qy * cos_alpha_i - qz * sin_alpha_i
         qz_r = qy * sin_alpha_i + qz * cos_alpha_i
         signed_qxy = np.sqrt(qx**2 + qy_r**2)*np.sign(qx)
