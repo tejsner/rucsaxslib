@@ -46,7 +46,9 @@ KEYWORDS = {'Dim_1': (int, None, 'geometry'),
             'Intensity0': (float, None, 'intensity'),
             'Intensity1': (float, None, 'intensity'),
             'ExposureTime': (float, None, 'intensity'),
-            'DarkConstant': (float, 0.0, 'intensity')}
+            'DarkConstant': (float, 0.0, 'intensity'),
+            'TransmittedFlux': (float, None, 'intensity'),
+            'SourcePolarization': (float, 0, 'intensity')}
 
 # axis labels for plotting
 AX_LABELS = {'normal': {'x': 'distance [mm]',
