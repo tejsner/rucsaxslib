@@ -131,7 +131,9 @@ class ImgData:
         elif apply_corrs and isinstance(apply_corrs, list):
             if 'PO' in apply_corrs and 'SP' in apply_corrs:
                 Lp = self.__get_Lp()
-            self.apply_corrections(corrs=apply_corrs, Lp=Lp)
+                self.apply_corrections(corrs=apply_corrs, Lp=Lp)
+            else:
+                self.apply_corrections(corrs=apply_corrs)
 
     def get_coordinates(self, reference_system="normal", orientation=1,
                         wavevector_components=None):
