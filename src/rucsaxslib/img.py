@@ -68,7 +68,8 @@ def from_file(filename, engine='fabio', header_rename={},
         faimg = fabio.open(filename)
 
         for key in header_rename:
-            faimg.header[header_rename[key]] = faimg.header[key]
+            if key in faimg.header:
+                faimg.header[header_rename[key]] = faimg.header[key]
 
         for key in header_extra:
             faimg.header[key] = header_extra[key]
