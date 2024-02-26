@@ -135,8 +135,7 @@ class ImgData:
             else:
                 self.apply_corrections(corrs=apply_corrs)
 
-    def get_coordinates(self, reference_system="normal", orientation=1,
-                        wavevector_components=None):
+    def get_coordinates(self, reference_system="normal", orientation=1):
         n1, n2 = self.header["Dim_1"], self.header["Dim_2"]
         o1, o2 = self.header["Offset_1"], self.header["Offset_2"]
         b1, b2 = self.header["BSize_1"], self.header["BSize_2"]
@@ -147,29 +146,43 @@ class ImgData:
                              np.linspace(0.5, n2-0.5, n2))
 
         if reference_system == "array":
-            return xx, yy
+            pass
         elif reference_system == "image":
-            return xx + o1, yy + o1
+            xx, yy = xx + o1, yy + o1
         elif reference_system == "region":
-            return (xx + o1) * b1, (yy + o2) * b2
+            xx, yy = (xx + o1) * b1, (yy + o2) * b2
         elif reference_system == "real":
-            return (xx + o1) * p1, (yy + o2) * p2
+            xx, yy = (xx + o1) * p1, (yy + o2) * p2
         elif reference_system == "center":
-            return xx + o1 - c1, yy + o2 - c2
+            xx, yy = xx + o1 - c1, yy + o2 - c2
         elif reference_system == "normal":
-            return (xx + o1 - c1) * p1, (yy + o2 - c2) * p2
+            xx, yy = (xx + o1 - c1) * p1, (yy + o2 - c2) * p2
         elif reference_system == "polar":
-            return self.__get_polar_coords()
+            xx, yy = self.__get_polar_coords()
         elif reference_system == "wavevector":
-            return self.__get_wavevector_coords(wavevector_components)
+            xx, yy = self.__get_wavevector_coords(components=('qx', 'qz'))
         elif reference_system == "gisaxs":
-            return self.__get_gisaxs_coords()
+            xx, yy = self.__get_gisaxs_coords()
+
+        # Orient according to chosen raster (default 1)
+        if orientation is not None:
+            xx, yy = self.__orient_coordinates(xx, yy, orientation=orientation)
+
+        # Positive coordinates for absolute coordinate systems
+        if reference_system in ('array', 'image', 'region', 'real'):
+            xx -= xx.min()
+            yy -= yy.min()
+
+        return xx, yy
 
     def get_q(self):
-        return self.get_coordinates(reference_system="wavevector",
-                                    wavevector_components='q')
+        return self.__get_wavevector_coords(components='q')
 
-    def orient_coordinates(self, xx, yy, orientation=1):
+    def get_tth(self):
+        tth, _ = self.get_coordinates(reference_system="polar")
+        return tth
+
+    def __orient_coordinates(self, xx, yy, orientation=1):
         orientation_from = self.header['RasterOrientation']
         m1 = RASTER_MAT[orientation_from]
         m2 = RASTER_MAT[orientation]
@@ -190,7 +203,6 @@ class ImgData:
 
     def plot(self, ax=None, coords='normal', rebin=None, **kwargs):
         xx, zz = self.get_coordinates(coords)
-        xx, zz = self.orient_coordinates(xx, zz, orientation=1)
 
         # polar coordinates in degrees (between 0 and 360) for plotting
         if coords == 'polar':
