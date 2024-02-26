@@ -7,8 +7,8 @@ from .img import from_rucsaxs
 import matplotlib.patches as patches
 
 
-def integrate_line(img, axis='qxy', bins=100,
-                   qxylim=(None, None), qzlim=(None, None)):
+def gi_integrate(img, axis='qxy', bins=100,
+                 qxylim=(None, None), qzlim=(None, None)):
     '''
     Perform GISAXS line integration
     '''
@@ -38,7 +38,7 @@ def integrate_line(img, axis='qxy', bins=100,
     return x, y, error
 
 
-def draw_bbox(ax, qxylim, qzlim, **kwargs):
+def gi_draw_bbox(ax, qxylim, qzlim, **kwargs):
     '''
     draw a bounding box used for line integration on figure axes.
     Assumes figure with qxy horizontal and qz vertical.
