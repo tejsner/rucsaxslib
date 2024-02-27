@@ -101,7 +101,7 @@ def from_rucsaxs(filename, **kwargs):
 
 class ImgData:
     def __init__(self, data, header, check_header=True, dark_subtracted=True,
-                 mask_le_dummy=True, apply_corrs=False):
+                 mask_le_dummy=True, apply_corrs='none'):
         # process header
         if check_header:
             self.__process_header(header)
@@ -125,16 +125,8 @@ class ImgData:
             self.data = np.array(data) - self.header['DarkConstant']
             self.error = np.sqrt(data)
 
-        # apply corrections?
-        if apply_corrs and isinstance(apply_corrs, bool):
-            Lp = self.__get_Lp()
-            self.apply_corrections(Lp=Lp)
-        elif apply_corrs and isinstance(apply_corrs, list):
-            if 'PO' in apply_corrs and 'SP' in apply_corrs:
-                Lp = self.__get_Lp()
-                self.apply_corrections(corrs=apply_corrs, Lp=Lp)
-            else:
-                self.apply_corrections(corrs=apply_corrs)
+        # apply corrections (if any).
+        self.apply_corrections(apply_corrs)
 
     def get_coordinates(self, reference_system="normal", orientation=1):
         n1, n2 = self.header["Dim_1"], self.header["Dim_2"]
@@ -242,6 +234,10 @@ class ImgData:
 
         if corrs == 'all':
             corrs = corr_function.keys()
+            kwargs = {'Lp': self.__get_Lp(), **kwargs}
+
+        if corrs == 'none':
+            corrs = ()
 
         for corr in corrs:
             if corr not in corr_function:
