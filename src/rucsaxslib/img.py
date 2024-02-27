@@ -64,6 +64,22 @@ AX_LABELS = {'normal': {'x': 'distance [mm]',
 
 def from_file(filename, engine='fabio', header_rename={},
               header_extra={}, **kwargs):
+    '''Load a detector image from a file
+
+    Args:
+        filename (str): path to filename.
+        engine (str, optional): Loading engine. Defaults to and only supports
+            "fabio".
+        header_rename (dict, optional): Dictionary to rename header variables.
+            Dictionary keys should be the current name, values should be the
+            desired nams. Skips variables not present in the header.
+        header_extra: (dict, optional): Extra header variables to add. If
+            variable allready exists it will be overwritten.
+        **kwargs: Additional keywords passed into the ImgData constructor.
+
+    Returns:
+        ImgData object containing the image data and header information.
+    '''
     if engine == 'fabio':
         faimg = fabio.open(filename)
 
@@ -80,6 +96,18 @@ def from_file(filename, engine='fabio', header_rename={},
 
 
 def from_rucsaxs(filename, **kwargs):
+    '''Load a detector image from RUCSAXS.
+
+    Specialized version of from_file that has default parameters appropriate
+    for data acquired at the RUCSAXS instrument.
+
+    Args:
+        filename (str): Path to filename.
+        **kwargs: Additional keywords passed into the ImgData constructor.
+
+    Returns:
+        ImgData object containing the image data and header information.
+    '''
     rucsaxs_rename = {'Comment': 'Title',
                       'Date': 'Time',
                       'BackgroundCorrectionConstant': 'DarkConstant',
@@ -100,6 +128,27 @@ def from_rucsaxs(filename, **kwargs):
 
 
 class ImgData:
+    '''Class for holding detector detector image data and metadata
+
+    Args:
+        data (numpy.ndarray): Raw detector intensity.
+        header (dict): Header information.
+        check_header (optional, bool): Process header to ensure that required
+            parameters are present. Also sets default values for some
+            parameters if not present in header. Defaults to True.
+        dark_subtracted (optional, bool): Is dark current subtracted from the
+            raw data? This has implications for the standard error. Defaults to
+            True.
+        apply_corrs (str or list, optional): Apply corrections to image data?
+            Argument is passed to the apply_corrections method. Defaults to
+            "none".
+
+    Attributes:
+        data (numpy.ndarray): Intensity for each pixel.
+        error (numpy.ndarray): Standard error for each pixel.
+        header (dict): Header information.
+    '''
+
     def __init__(self, data, header, check_header=True, dark_subtracted=True,
                  mask_le_dummy=True, apply_corrs='none'):
         # process header
@@ -129,6 +178,31 @@ class ImgData:
         self.apply_corrections(apply_corrs)
 
     def get_coordinates(self, reference_system="normal", orientation=1):
+        '''Get coordinates of detector image in various reference systems
+
+        Possible arguments to reference system are:
+        - array: Pixel centers.
+        - image: Pixel centers including offset.
+        - region: Pixel centers incuding offset scaled by binning size.
+        - real: Real space coordinates in meters.
+        - center: Pixel coordinate relative to direct beam.
+        - normal: Real space coordinates relative to direct beam in meters.
+        - polar: Polar coordinates. (2theta, phi).
+        - wavevector: 2D wavevector coordinates. (q_x, q_z).
+        - gisaxs: 2D GISAXS coordinates. (qxy, qz).
+
+        Args:
+            reference_system (str): Target reference system. Defaults to
+                "normal".
+            orientation (int): Desired raster orientation. Defaults to 1
+                (positive horizontal as the first axis, positive horizontal as
+                the second axis.
+
+        Returns:
+            (numpy.ndarray, numpy.ndarray): 2-Tuple with horizontal and
+            vertical coordinates of the detector image in the desired reference
+            system.
+        '''
         n1, n2 = self.header["Dim_1"], self.header["Dim_2"]
         o1, o2 = self.header["Offset_1"], self.header["Offset_2"]
         b1, b2 = self.header["BSize_1"], self.header["BSize_2"]
@@ -169,9 +243,27 @@ class ImgData:
         return xx, yy
 
     def get_q(self):
+        '''Get wavevector magnitude (q) of each pixel in inverse Angstrom.
+
+        Calculated as 4*pi/lambda*sin(theta) where lambda is the wavelength of
+        the incident radiation in angstroms and theta is half the scattering
+        angle (see documentation of get_tth).
+
+        Returns:
+            numpy.ndarray: Wavevector magntitude (q) of each pixel on
+                the detector.
+        '''
         return self.__get_wavevector_coords(components='q')
 
     def get_tth(self):
+        '''Get scattering angle (twotheta) of each pixel in degrees
+
+        Calculated as arccos(sd/r) where sd is the sample-detector distance and
+        r is the distance from the direct beam to each pixel.
+
+        Returns:
+            numpy.ndarray: Scattering angle of each pixel on the detector.
+        '''
         tth, _ = self.get_coordinates(reference_system="polar")
         return tth
 
@@ -195,6 +287,18 @@ class ImgData:
             return yy, xx
 
     def plot(self, ax=None, coords='normal', rebin=None, **kwargs):
+        '''plot detector image using matplotlib
+
+        Args:
+            ax (optional): Axis to plot on
+            coords (str, optional): Reference system. Defaults to 'normal'. See
+                get_coordinates method for details.
+            rebin (optional): Rebin the output? If a value is supplied it is
+                passed to the bins argument of numpy.histogram2d. Typical usage
+                is to supply an integer for the number of bins in both the
+                horizontal and vertical directions.
+            **kwargs: Additional keywords passed to pcolormesh.
+        '''
         xx, zz = self.get_coordinates(coords)
 
         # polar coordinates in degrees (between 0 and 360) for plotting
@@ -226,6 +330,28 @@ class ImgData:
                    ylabel=AX_LABELS[coords]['y'])
 
     def apply_corrections(self, corrs='all', **kwargs):
+        '''Apply corrections to image
+
+        The following corrections are available:
+
+        TI: Normalization by time.
+        FL_TR: Normalization by incident flux and transmitted intensity.
+        SP_avg: Normalization by average solid angle of a pixel.
+        SP: Solid angle correction.
+        PO: Polarization correction
+
+        Only the SP and PO corrections change the relative intensities (both
+        corrections depend on the scattering angle).
+
+        Args:
+            corrs (optional): Either a string "none" or "all". "none" applies
+                no corrections and "all" applies all corrections. Otherwise the
+                argument should be a list of desired corrections (as str) with
+                the choices being "TI", "FL_TR", "SP_avg", "SP" and "PO".
+            **kwargs: Keyword arguments that can override values extracted from
+                the image header. Possible arguments are: "ExposureTime",
+                "TransmittedFlux" and "SourcePolarization"
+        '''
         corr_function = {'TI': self.__corr_fact_TI,
                          'FL_TR': self.__corr_fact_FL_TR,
                          'SP': self.__corr_fact_SP,
