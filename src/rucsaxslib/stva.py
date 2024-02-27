@@ -10,14 +10,9 @@ from pathlib import Path
 import fabio
 
 
-def read_nanocalc_lrc(fn):
+def get_lrc_table(fn):
     model = configparser.ConfigParser()
     model.read(fn)
-    return model
-
-
-def get_lrc_table(fn):
-    model = read_nanocalc_lrc(fn)
     thick_layer_idx = model['layers']['IndexOfThickLayer']
     model_layer_idx = model['layers']['LayersToFit'].split(';')
 
