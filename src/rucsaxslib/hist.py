@@ -1,5 +1,6 @@
 '''
-Azimuthal integration of images
+Integration of 2d images onto any supplied axis.
+Typically used for azimuthal integration.
 '''
 import numpy as np
 
