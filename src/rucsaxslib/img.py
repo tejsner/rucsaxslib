@@ -139,7 +139,7 @@ class ImgData:
         dark_subtracted (optional, bool): Is dark current subtracted from the
             raw data? This has implications for the standard error. Defaults to
             True.
-        apply_corrs (str or list, optional): Apply corrections to image data?
+        corrs (str or list, optional): Apply corrections to image data?
             Argument is passed to the apply_corrections method. Defaults to
             "none".
 
@@ -150,7 +150,7 @@ class ImgData:
     '''
 
     def __init__(self, data, header, check_header=True, dark_subtracted=True,
-                 mask_le_dummy=True, apply_corrs='none'):
+                 mask_le_dummy=True, corrs='none'):
         # process header
         if check_header:
             self.__process_header(header)
@@ -175,7 +175,7 @@ class ImgData:
             self.error = np.sqrt(data)
 
         # apply corrections (if any).
-        self.apply_corrections(apply_corrs)
+        self.apply_corrections(corrs)
 
     def get_coordinates(self, reference_system="normal", orientation=1):
         '''Get coordinates of detector image in various reference systems
