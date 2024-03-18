@@ -1,5 +1,11 @@
 # rucsaxslib
 
+- [Installation](#installation)
+  - [Manual installation](#manual-installation)
+  - [From TestPyPI](#from-testpypi)
+- [Overview](#Overview)
+- [Example usage](#example-usage)
+
 ## Introduction
 
 `rucsaxslib` is a Python package intended for treatment of 2D X-ray scattering data.
