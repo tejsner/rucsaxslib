@@ -200,17 +200,29 @@ It contains the following functions:
 
 ## Header keywords
 
-| Keyword             | Required           | Default | Type    | Description |
-|---------------------|--------------------|---------|---------|-------------|
-| `Dim_1`             | :white_check_mark: |         | `int`   |             |
-| `Dim_2`             | :white_check_mark: |         | `int`   |             |
-| `RasterOrientation` |                    | 3       | `int`   |             |
-| `Offset_1`          |                    | 0       | `int`   |             |
-| `Offset_2`          |                    | 0       | `int`   |             |
-| `BSize_1`           |                    | 1       | `int`   |             |
-| `BSize_2`           |                    | 1       | `int`   |             |
-| `PSize_1`           |                    | 7.5e-5  | `float` |             |
-| `PSize_2`           |                    | 7.5e-5  | `float` |             |
-| `Center_1`          | :white_check_mark: |         | `float` |             |
-| `Center_2`          | :white_check_mark: |         | `float` |             |
+See [Boesecke (2007)](https://doi.org/10.1107/S0021889807001100) for details.
 
+| Keyword              | Required           | Default  | Type    | Description                                                       |
+|----------------------|--------------------|----------|---------|-------------------------------------------------------------------|
+| `Dim_1`              | :white_check_mark: |          | `int`   | Number of pixels along axis 1                                     |
+| `Dim_2`              | :white_check_mark: |          | `int`   | Number of pixels along axis 2                                     |
+| `RasterOrientation`  |                    | 3        | `int`   | Raster orientation number                                         |
+| `Offset_1`           |                    | 0        | `int`   | Spatial array offset along axis 1                                 |
+| `Offset_2`           |                    | 0        | `int`   | Spatial array offset along axis 2                                 |
+| `BSize_1`            |                    | 1        | `int`   | Pixel size relative to size of unbinned pixel along axis 1        |
+| `BSize_2`            |                    | 1        | `int`   | Pixel size relative to size of unbinned pixel along axis 2        |
+| `PSize_1`            |                    | 7.5e-5   | `float` | Pixel size in meters along axis 1                                 |
+| `PSize_2`            |                    | 7.5e-5   | `float` | Pixel size in meters along axis 2                                 |
+| `Center_1`           | :white_check_mark: |          | `float` | Point of Normal Incidence (axis 1)                                |
+| `Center_2`           | :white_check_mark: |          | `float` | Point of Normal Incidence (axis 2)                                |
+| `SampleDistance`     | :white_check_mark: |          | `float` | Sample-detector distance in meters                                |
+| `WaveLength`         |                    | 1.54e-10 | `float` | X-ray wavelength in meters                                        |
+| `IncidentAngle`      |                    | 0        | `float` | Incident angle (used for GISAXS)                                  |
+| `Dummy`              |                    |          | `float` | Dummy value                                                       |
+| `DDummy`             |                    |          | `float` | Range around Dummy                                                |
+| `Time`               |                    |          | `str`   | Start time of exposure in ISO8601                                 |
+| `Title`              |                    |          | `str`   | Title string                                                      |
+| `ExposureTime`       |                    | 1.0      | `float` | Exposure time                                                     |
+| `DarkConstant`       |                    | 0.0      | `float` | Dark constant subtracted from all pixels                          |
+| `TransmittedFlux`    |                    | 1.0      | `float` | Flux of transmitted beam                                          |
+| `SourcePolarization` |                    | 0.0      | `float` | Polarization of source (-1 horizontal, 0 unpolarized, 1 vertical) |
