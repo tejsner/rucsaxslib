@@ -200,17 +200,17 @@ It contains the following functions:
 
 ## Header keywords
 
-| Keyword             | Required | Default | Type    | Description |
-|---------------------|----------|---------|---------|-------------|
-| `Dim_1`             | [x]      |         | `int`   |             |
-| `Dim_2`             | [x]      |         | `int`   |             |
-| `RasterOrientation` |          | 3       | `int`   |             |
-| `Offset_1`          |          | 0       | `int`   |             |
-| `Offset_2`          |          | 0       | `int`   |             |
-| `BSize_1`           |          | 1       | `int`   |             |
-| `BSize_2`           |          | 1       | `int`   |             |
-| `PSize_1`           |          | 7.5e-5  | `float` |             |
-| `PSize_2`           |          | 7.5e-5  | `float` |             |
-| `Center_1`          | [x]      |         | `float` |             |
-| `Center_2`          | [x]      |         | `float` |             |
+| Keyword             | Required           | Default | Type    | Description |
+|---------------------|--------------------|---------|---------|-------------|
+| `Dim_1`             | :heavy_check_mark: |         | `int`   |             |
+| `Dim_2`             | :heavy_check_mark: |         | `int`   |             |
+| `RasterOrientation` |                    | 3       | `int`   |             |
+| `Offset_1`          |                    | 0       | `int`   |             |
+| `Offset_2`          |                    | 0       | `int`   |             |
+| `BSize_1`           |                    | 1       | `int`   |             |
+| `BSize_2`           |                    | 1       | `int`   |             |
+| `PSize_1`           |                    | 7.5e-5  | `float` |             |
+| `PSize_2`           |                    | 7.5e-5  | `float` |             |
+| `Center_1`          | :heavy_check_mark: |         | `float` |             |
+| `Center_2`          | :heavy_check_mark: |         | `float` |             |
 
