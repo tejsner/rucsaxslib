@@ -61,10 +61,17 @@ img = rs.from_rucsaxs('data.edf')
 
 This loads the raw image data that can be accessed from the `img.data` attribute.
 Header information is saved in the `img.header` attribute and the standard error for each pixel is saved in the `img.error` attribute.
+To perform all standard corrections to the pixel intensities (time, flux, transmission, solid angle and polarization), run
+
+```python
+import rucsaxslib as rs
+img = rs.from_rucsaxs('data.edf', corrs='all')
+```
 
 `ImgData` objects contain a number of useful methods:
 
 - `ImgData.apply_corrections`: Corrects data and error in order to the differential scattering cross-section for each pixel.
+  As shown above, this can be run when initializing the object through the `corrs` keyword argument.
 - `ImgData.get_coordinates`: Get coordinates of each pixel in various reference systems.
 - `ImgData.get_q`: Get the magnitude of $q$ (in inverse angstrom) for each pixel.
 - `ImgData.get_tth`: Get the scattering angle $2\theta$ (in degrees) for each pixel.
