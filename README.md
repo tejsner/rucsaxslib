@@ -48,13 +48,29 @@ Run `help()` on any of these objects from a Python prompt for details.
 ## Detector Data
 Detector data is stored in `ImgData` objects.
 `ImgData` objects are initialized by passing the raw detector counts (numpy array) and header information (dictionary).
-Generally, this operation is performed by the helper function `from_rucsaxs` that returns an `ImgData` object given an image file (in `.edf` format).
-For example:
+In order for data reduction to work properly, there are a number of keys in the header that are required (such as sample-detector distance).
+These keywords are listed in [Required keywords](#required-keywords).
+
+When working with data from the rucsaxs laboratory, the helper function `from_rucsaxs` takes care of loading the image file and setting the required keywords.
+In practice, one loads an image (in this case a file named `data.edf`) by running the following:
 
 ```python
 import rucsaxslib as rs
-data = rs.from_rucsaxs('data.edf')
+img = rs.from_rucsaxs('data.edf')
 ```
+
+This loads the raw image data that can be accessed from the `img.data` attribute.
+Header information is saved in the `img.header` attribute and the standard error for each pixel is saved in the `img.error` attribute.
+
+`ImgData` objects contain a number of useful methods:
+
+- `ImgData.apply_corrections`: Corrects data and error in order to the differential scattering cross-section for each pixel.
+- `ImgData.get_coordinates`: Get coordinates of each pixel in various reference systems.
+- `ImgData.get_q`: Get the magnitude of $q$ (in inverse angstrom) for each pixel.
+- `ImgData.get_tth`: Get the scattering angle $2\theta$ (in degrees) for each pixel.
+- `ImgData.plot`: Plot the detector image using [Matplotlib](https://matplotlib.org/).
+
+For details see the docstring of each method.
 
 ## Plaintext Data
 
