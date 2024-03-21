@@ -46,9 +46,9 @@ KEYWORDS = {'Dim_1': (int, None, 'geometry'),
             'Title': (str, None, 'optional'),
             'Intensity0': (float, None, 'intensity'),
             'Intensity1': (float, None, 'intensity'),
-            'ExposureTime': (float, None, 'intensity'),
+            'ExposureTime': (float, 1, 'intensity'),
             'DarkConstant': (float, 0.0, 'intensity'),
-            'TransmittedFlux': (float, None, 'intensity'),
+            'TransmittedFlux': (float, 1.0, 'intensity'),
             'SourcePolarization': (float, 0, 'intensity')}
 
 # axis labels for plotting
