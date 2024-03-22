@@ -107,7 +107,7 @@ To azimuthally integrate an image (`data.edf`), one could do the following
 ```python
 import rucsaxslib as rs
 img = rs.from_rucsass('data.edf', corrs='all')
-q, I, err = integrate(img, x=img.get_q(), bins=500, xrange=(0, 0.5))
+q, I, err = rs.integrate(img, x=img.get_q(), bins=500, xrange=(0, 0.5))
 ```
 
 Or equivalently (using the shorthand "q" as the argument for the x-axis):
@@ -115,7 +115,7 @@ Or equivalently (using the shorthand "q" as the argument for the x-axis):
 ```python
 import rucsaxslib as rs
 img = rs.from_rucsass('data.edf', corrs='all')
-q, I, err = integrate(img, x='q', bins=500, xrange=(0, 0.5))
+q, I, err = rs.integrate(img, x='q', bins=500, xrange=(0, 0.5))
 ```
 
 This will load the image, perform all corrections, integrate with 500 bins between 0 and 0.5 inverse angstrom.
@@ -130,7 +130,7 @@ This can be achieved using the `get_coordinates` method of an `ImgData` object a
 import rucsaxslib as rs
 img = rs.from_rucsass('data.edf', corrs=['PO', 'SP'])
 img_qxy, img_qz = img.get_coordinates("gisaxs")
-qxy, I, err = integrate(img, x=img_qxy, bins=500, xrange=(-0.2, 0.2))
+qxy, I, err = rs.integrate(img, x=img_qxy, bins=500, xrange=(-0.2, 0.2))
 ```
 
 Which will integrate the image along $q_{xy}$ between -0.2 and 0.2 inverse angstrom.
@@ -140,7 +140,7 @@ The following code is equivalent to the above snippet:
 ```python
 import rucsaxslib as rs
 img = rs.from_rucsass('data.edf', corrs=['PO', 'SP'])
-qxy, I, err = gi_integrate(img, axis='qxy', bins=500, qxylim=(-0.2, 0.2))
+qxy, I, err = rs.gi_integrate(img, axis='qxy', bins=500, qxylim=(-0.2, 0.2))
 ```
 
 In addition, this function also makes it simpler to restrict the integration area in both directions, i.e. the following
@@ -148,7 +148,7 @@ In addition, this function also makes it simpler to restrict the integration are
 ```python
 import rucsaxslib as rs
 img = rs.from_rucsass('data.edf', corrs=['PO', 'SP'])
-qxy, I, err = gi_integrate(img, axis='qxy', bins=500, qxylim=(-0.2, 0.2), qzlim=(0, 0.3))
+qxy, I, err = rs.gi_integrate(img, axis='qxy', bins=500, qxylim=(-0.2, 0.2), qzlim=(0, 0.3))
 ```
 
 will integrate in the $q_{xy}$ direction from -0.2 to 0.2  while restricting the integration in the $q_z$ direction to being between 0 and 0.3.
@@ -163,7 +163,7 @@ import matplotlib.pyplot as plt
 img = rs.from_rucsass('data.edf', corrs=['PO', 'SP'])
 qxylim = (-0.2, 0.2)
 qzlim = (0, 0.3)
-qxy, I, err = gi_integrate(img, axis='qxy', bins=200, qxylim=qxylim, qzlim=qzlim)
+qxy, I, err = rs.gi_integrate(img, axis='qxy', bins=200, qxylim=qxylim, qzlim=qzlim)
 
 f, ax = plt.subplots(ncols=2)
 img.plot(ax=ax[0], coords='gisaxs', rebin=300)
@@ -182,7 +182,7 @@ import rucsaxslib as rs
 import glob
 
 filenames = sorted(glob.glob('reflectivity/*.edf'))
-angle, I, err = reflectivity(filenames, roi_size=(21, 21), angle_offset=0)
+angle, I, err = rs.reflectivity(filenames, roi_size=(21, 21), angle_offset=0)
 ```
 
 The optional keyword arguments can be used to adjust the region of interest and an angle offset (in case the experiment is not properly aligned).
