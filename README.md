@@ -123,7 +123,8 @@ If the `bins` argument is omitted, the procedure will default to 500 bins.
 If the `xrange` argument is omitted, the range will be the minimum and maximum of the data.
 
 ## GISAXS
-When doing GISAXS (Grazing Incidence Small-Angle X-ray Scattering), it can be useful to integrate images along the $q_{xy}$ and $q_z$ axes separately. This can be achieved using the `get_coordinates` of an `ImgData` object along with the `integrate` functions:
+When doing GISAXS (Grazing Incidence Small-Angle X-ray Scattering), it can be useful to integrate images along the $q_{xy}$ and $q_z$ axes separately.
+This can be achieved using the `get_coordinates` method of an `ImgData` object along with the `rucsaxslib.integrate` function:
 
 ```python
 import rucsaxslib as rs
@@ -157,7 +158,7 @@ This takes the same `qxylim` and `qzlim` arguments as `gi_integrate`, so one can
 
 ```python
 import rucsaxslib as rs
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 img = rs.from_rucsass('data.edf', corrs=['PO', 'SP'])
 qxylim = (-0.2, 0.2)
