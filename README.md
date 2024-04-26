@@ -1,3 +1,7 @@
+# Notice
+
+**This repository has been archived and development has moved to <https://git.ruc.dk/rucsaxs/rucsaxslib>**
+
 # rucsaxslib
 `rucsaxslib` is a Python package intended for treatment of 2D X-ray scattering data.
 While the library is designed to be generally applicable, it has only been tested on data from the [Xeuss3](https://www.xenocs.com/saxs-products/saxs-equipment-xeuss) installed at Roskilde University (RUC).
